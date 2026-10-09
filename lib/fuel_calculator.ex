@@ -1,9 +1,8 @@
 defmodule FuelCalculator do
   @moduledoc """
-  FuelCalculator keeps the contexts that define your domain
-  and business logic.
+  Works out how much fuel a ship needs to fly a path between planets.
 
-  Contexts are also responsible for managing your data, regardless
-  if it comes from the database, an external API or others.
+  See `FuelCalculator.Calculator` for the fuel maths and
+  `FuelCalculator.Planet` for the supported planets.
   """
 end
