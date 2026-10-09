@@ -4,25 +4,35 @@ defmodule FuelCalculator.Calculator do
   """
 
   alias FuelCalculator.Planet
+
   @type action :: :launch | :land
+  @type step :: {action(), Planet.t()}
 
-  require Logger
+  @doc """
+  Total fuel needed to fly the whole path with a craft of the given mass
 
+      iex> FuelCalculator.Calculator.get_total_for_a_path(28801, [
+      ...>   {:launch, :earth},
+      ...>   {:land, :moon},
+      ...>   {:launch, :moon},
+      ...>   {:land, :earth}
+      ...> ])
+      51898
+  """
+  @spec get_total_for_a_path(number(), [step()]) :: non_neg_integer()
   def get_total_for_a_path(mass, path) do
-    # walk the path in reverse so that it seems we are starting from zero
-    # and add as we go up.
-    "return total"
+    {_steps, total} = walk_path(mass, path)
+    total
   end
 
-  [
-    {:launch, :earth},
-    {:land, :moon},
-    {:launch, :moon},
-    {:land, :earth}
-  ]
+  @doc """
+  Fuel for every step of the path, in flight order, plus the total
 
- def walk_path(mass, path) do
-  {steps, carried} =
+  Walks the path in reverse so that it seems we are starting from zero
+  and adds as we go up, every step carries the fuel of the steps after it.
+  """
+  @spec walk_path(number(), [step()]) :: {[{step(), non_neg_integer()}], non_neg_integer()}
+  def walk_path(mass, path) do
     path
     |> Enum.reverse()
     |> Enum.reduce({[], 0}, fn {action, dest} = step, {steps, acc} ->
@@ -31,11 +41,14 @@ defmodule FuelCalculator.Calculator do
 
       {[{step, fuel} | steps], acc + fuel}
     end)
+  end
 
-  Logger.info("steps #{inspect(steps)}, carried #{carried}", pretty: true)
-  {steps, carried}
-end
+  @doc """
+  Fuel for a single launch or landing, including fuel for the fuel
 
+      iex> FuelCalculator.Calculator.step_fuel(28801, 9.807, :land)
+      13447
+  """
   @spec step_fuel(number(), float(), action()) :: non_neg_integer()
   def step_fuel(mass, gravity, action) do
     mass
@@ -50,6 +63,7 @@ end
     fuel + add_fuel_for_fuel(raw_fuel(fuel, gravity, action), gravity, action)
   end
 
+  @spec raw_fuel(number(), float(), action()) :: integer()
   defp raw_fuel(mass, gravity, :launch), do: floor(mass * gravity * 0.042 - 33)
   defp raw_fuel(mass, gravity, :land), do: floor(mass * gravity * 0.033 - 42)
 end
