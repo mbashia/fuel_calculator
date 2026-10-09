@@ -4,7 +4,9 @@ defmodule FuelCalculator.Calculator do
   """
 
   alias FuelCalculator.Planet
-    @type action :: :launch | :land
+  @type action :: :launch | :land
+
+  require Logger
 
   def get_total_for_a_path(mass, path) do
     # walk the path in reverse so that it seems we are starting from zero
@@ -20,11 +22,16 @@ defmodule FuelCalculator.Calculator do
   ]
 
   def walk_path(mass, path) do
-    path
-    |> Enum.reverse()
-    |> Enum.reduce(mass, fn {action, dest}, acc ->
-      acc
-    end)
+    {steps, carried} =
+      path
+      |> Enum.reverse()
+      |> Enum.reduce(0, fn {action, dest} = step, acc ->
+        current_mass = acc + mass
+        fuel = step_fuel(current_mass, Planet.gravity(dest), action)
+        {{step, fuel}, acc + fuel}
+      end)
+
+    Logger.info("steps #{steps}, carried #{carried}")
   end
 
   @spec step_fuel(number(), float(), action()) :: non_neg_integer()
