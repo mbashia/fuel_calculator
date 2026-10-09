@@ -21,18 +21,20 @@ defmodule FuelCalculator.Calculator do
     {:land, :earth}
   ]
 
-  def walk_path(mass, path) do
-    {steps, carried} =
-      path
-      |> Enum.reverse()
-      |> Enum.reduce(0, fn {action, dest} = step, acc ->
-        current_mass = acc + mass
-        fuel = step_fuel(current_mass, Planet.gravity(dest), action)
-        {{step, fuel}, acc + fuel}
-      end)
+ def walk_path(mass, path) do
+  {steps, carried} =
+    path
+    |> Enum.reverse()
+    |> Enum.reduce({[], 0}, fn {action, dest} = step, {steps, acc} ->
+      current_mass = mass + acc
+      fuel = step_fuel(current_mass, Planet.gravity(dest), action)
 
-    Logger.info("steps #{steps}, carried #{carried}")
-  end
+      {[{step, fuel} | steps], acc + fuel}
+    end)
+
+  Logger.info("steps #{inspect(steps)}, carried #{carried}", pretty: true)
+  {steps, carried}
+end
 
   @spec step_fuel(number(), float(), action()) :: non_neg_integer()
   def step_fuel(mass, gravity, action) do
