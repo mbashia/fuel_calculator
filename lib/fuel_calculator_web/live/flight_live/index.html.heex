@@ -1,0 +1,99 @@
+<.header>
+  Plan your flight
+  <:subtitle>Add each launch and landing in order. Fuel updates as you go.</:subtitle>
+</.header>
+
+<div class="flex flex-wrap gap-2">
+  <span class="text-sm text-base-content/60 self-center">Try:</span>
+  <button
+    :for={{key, name, _mass, _path} <- missions()}
+    type="button"
+    class="btn btn-xs btn-soft"
+    phx-click="load_mission"
+    phx-value-mission={key}
+  >
+    {name}
+  </button>
+</div>
+
+<form id="flight-form" phx-change="update" phx-submit="update" class="space-y-4">
+  <.input
+    name="mass"
+    id="mass"
+    label="Spacecraft mass (kg)"
+    type="number"
+    step="any"
+    min="0"
+    value={@mass}
+    placeholder="e.g. 28801"
+    errors={@errors.mass}
+    phx-debounce="200"
+  />
+
+  <div class="space-y-2">
+    <span class="label">Flight path</span>
+    <p :if={@steps == []} class="text-sm text-base-content/60">
+      No steps yet. Add a launch to get going.
+    </p>
+    <div
+      :for={{step, i} <- Enum.with_index(@steps, 1)}
+      id={"step-#{step.id}"}
+      class="flex gap-2"
+    >
+      <span class="badge badge-ghost mt-2.5">{i}</span>
+      <.input
+        type="select"
+        id={"step-#{step.id}-action"}
+        name={"steps[#{step.id}][action]"}
+        value={step.action}
+        options={[{"Launch from", "launch"}, {"Land on", "land"}]}
+        prompt="Action"
+        class="select w-36"
+        errors={step_errors(@errors, step.id, :action)}
+      />
+      <.input
+        type="select"
+        id={"step-#{step.id}-planet"}
+        name={"steps[#{step.id}][planet]"}
+        value={step.planet}
+        options={Enum.map(Planet.all(), &{Planet.name(&1), &1})}
+        prompt="Planet"
+        class="select w-36"
+        errors={step_errors(@errors, step.id, :planet)}
+      />
+      <button
+        type="button"
+        class="btn btn-ghost btn-square mt-0.5"
+        phx-click="remove_step"
+        phx-value-id={step.id}
+        aria-label="Remove step"
+      >
+        <.icon name="hero-x-mark" class="size-5" />
+      </button>
+    </div>
+  </div>
+</form>
+
+<div class="flex gap-2">
+  <button type="button" class="btn btn-sm" phx-click="add_step">
+    <.icon name="hero-plus" class="size-4" /> Add step
+  </button>
+  <button :if={@steps != []} type="button" class="btn btn-sm btn-ghost" phx-click="clear">
+    Clear
+  </button>
+</div>
+
+<div :if={@result} id="result" class="card bg-base-200">
+  <div class="card-body">
+    <div class="stat p-0">
+      <div class="stat-title">Total fuel required</div>
+      <div id="total-fuel" class="stat-value text-primary">{format(@result.total)} kg</div>
+    </div>
+    <ul class="text-sm space-y-1 mt-2">
+      <li :for={{{action, planet}, fuel} <- @result.steps} class="flex justify-between">
+        <span>{describe(action, planet)}</span>
+        <span class="font-mono">{format(fuel)} kg</span>
+      </li>
+    </ul>
+  </div>
+</div>
