@@ -87,6 +87,17 @@ defmodule FuelCalculatorWeb.FlightLive.IndexTest do
       refute has_element?(view, "#result")
     end
 
+    test "rejects mass heavier than any real craft", %{view: view} do
+      assert change(view, %{mass: "10000001"}) =~ "must be 10,000,000 kg or less"
+      assert change(view, %{mass: "1e308"}) =~ "must be 10,000,000 kg or less"
+      refute has_element?(view, "#result")
+    end
+
+    test "accepts the heaviest allowed mass", %{view: view} do
+      change(view, %{mass: "10000000", steps: %{"1" => %{action: "launch", planet: "earth"}}})
+      assert has_element?(view, "#result")
+    end
+
     test "rejects mass that isn't a number", %{view: view} do
       assert change(view, %{mass: "heavy"}) =~ "must be a number"
     end

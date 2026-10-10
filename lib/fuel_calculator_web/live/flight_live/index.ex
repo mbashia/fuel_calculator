@@ -124,11 +124,20 @@ defmodule FuelCalculatorWeb.FlightLive.Index do
   @spec parse_mass(String.t()) :: {:ok, float()} | {:error, String.t()}
   defp parse_mass(value) do
     case Float.parse(String.trim(value)) do
-      {mass, ""} when mass > 0 -> {:ok, mass}
-      {_mass, ""} -> {:error, "must be greater than zero"}
+      {mass, ""} -> check_mass(mass)
       _ -> {:error, "must be a number"}
     end
   end
+
+  defp check_mass(mass) do
+    cond do
+      mass <= 0 -> {:error, "must be greater than zero"}
+      mass > max_mass() -> {:error, "must be #{format(max_mass())} kg or less"}
+      true -> {:ok, mass}
+    end
+  end
+
+  defp max_mass, do: Calculator.max_mass()
 
   @spec parse_path([step()]) ::
           {:ok, [Calculator.step()]} | {:error, %{pos_integer() => map()}}

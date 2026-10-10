@@ -40,6 +40,12 @@ defmodule FuelCalculator.CalculatorTest do
       assert Calculator.total_fuel_for_a_path(75432, path) == 212_161
     end
 
+    test "refuses masses above the limit" do
+      assert_raise FunctionClauseError, fn ->
+        Calculator.total_fuel_for_a_path(Calculator.max_mass() + 1, launch: :earth)
+      end
+    end
+
     test "empty path needs no fuel" do
       assert Calculator.total_fuel_for_a_path(1000, []) == 0
     end

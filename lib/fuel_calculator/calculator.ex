@@ -8,6 +8,14 @@ defmodule FuelCalculator.Calculator do
   @type action :: :launch | :land
   @type step :: {action(), Planet.t()}
 
+  @max_mass 10_000_000
+
+  @doc """
+  Heaviest craft we calculate fuel for, in kg, about double a fully fuelled Starship
+  """
+  @spec max_mass() :: pos_integer()
+  def max_mass, do: @max_mass
+
   @doc """
   Total fuel needed to fly the whole path with a craft of the given mass
 
@@ -30,9 +38,11 @@ defmodule FuelCalculator.Calculator do
 
   Walks the path in reverse so that it seems we are starting from zero
   and adds as we go up, every step carries the fuel of the steps after it.
+
+  Masses above `max_mass/0` are not accepted.
   """
   @spec walk_path(number(), [step()]) :: {[{step(), non_neg_integer()}], non_neg_integer()}
-  def walk_path(mass, path) do
+  def walk_path(mass, path) when mass <= @max_mass do
     path
     |> Enum.reverse()
     |> Enum.reduce({[], 0}, fn {action, dest} = step, {steps, acc} ->
