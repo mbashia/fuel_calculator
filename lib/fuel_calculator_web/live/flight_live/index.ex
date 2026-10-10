@@ -89,9 +89,6 @@ defmodule FuelCalculatorWeb.FlightLive.Index do
 
   @spec update_steps([step()], map()) :: [step()]
   defp update_steps(steps, params) do
-    IO.inspect(steps, label: "steps")
-    IO.inspect(params, label: "params")
-
     Enum.map(steps, fn step ->
       new = Map.get(params, Integer.to_string(step.id), %{})
 
