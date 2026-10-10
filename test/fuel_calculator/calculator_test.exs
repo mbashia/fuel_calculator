@@ -16,15 +16,15 @@ defmodule FuelCalculator.CalculatorTest do
     end
   end
 
-  describe "get_total_for_a_path/2" do
+  describe "total_fuel_for_a_path/2" do
     test "Apollo 11 mission" do
       path = [launch: :earth, land: :moon, launch: :moon, land: :earth]
-      assert Calculator.get_total_for_a_path(28801, path) == 51898
+      assert Calculator.total_fuel_for_a_path(28801, path) == 51898
     end
 
     test "Mars mission" do
       path = [launch: :earth, land: :mars, launch: :mars, land: :earth]
-      assert Calculator.get_total_for_a_path(14606, path) == 33388
+      assert Calculator.total_fuel_for_a_path(14606, path) == 33388
     end
 
     test "passenger ship mission" do
@@ -37,11 +37,11 @@ defmodule FuelCalculator.CalculatorTest do
         land: :earth
       ]
 
-      assert Calculator.get_total_for_a_path(75432, path) == 212_161
+      assert Calculator.total_fuel_for_a_path(75432, path) == 212_161
     end
 
     test "empty path needs no fuel" do
-      assert Calculator.get_total_for_a_path(1000, []) == 0
+      assert Calculator.total_fuel_for_a_path(1000, []) == 0
     end
   end
 

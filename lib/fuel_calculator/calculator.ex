@@ -11,7 +11,7 @@ defmodule FuelCalculator.Calculator do
   @doc """
   Total fuel needed to fly the whole path with a craft of the given mass
 
-      iex> FuelCalculator.Calculator.get_total_for_a_path(28801, [
+      iex> FuelCalculator.Calculator.total_fuel_for_a_path(28801, [
       ...>   {:launch, :earth},
       ...>   {:land, :moon},
       ...>   {:launch, :moon},
@@ -19,8 +19,8 @@ defmodule FuelCalculator.Calculator do
       ...> ])
       51898
   """
-  @spec get_total_for_a_path(number(), [step()]) :: non_neg_integer()
-  def get_total_for_a_path(mass, path) do
+  @spec total_fuel_for_a_path(number(), [step()]) :: non_neg_integer()
+  def total_fuel_for_a_path(mass, path) do
     {_steps, total} = walk_path(mass, path)
     total
   end
