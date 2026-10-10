@@ -59,9 +59,9 @@ defmodule FuelCalculatorWeb.FlightLive.IndexTest do
     view |> element("button", "Mars") |> render_click()
     assert view |> element("#total-fuel") |> render() =~ "33,388 kg"
 
-    view |> element("#step-2 button[aria-label='Remove step']") |> render_click()
+    view |> element("#step-4 button[aria-label='Remove step']") |> render_click()
 
-    refute has_element?(view, "#step-2")
+    refute has_element?(view, "#step-4")
     refute view |> element("#total-fuel") |> render() =~ "33,388 kg"
   end
 
@@ -100,6 +100,54 @@ defmodule FuelCalculatorWeb.FlightLive.IndexTest do
 
       assert html =~ "pick an action"
       assert html =~ "pick a planet"
+      refute has_element?(view, "#result")
+    end
+
+    test "can't launch twice in a row", %{view: view} do
+      render_click(view, "add_step")
+
+      html =
+        change(view, %{
+          mass: "28801",
+          steps: %{
+            "1" => %{action: "launch", planet: "earth"},
+            "2" => %{action: "launch", planet: "mars"}
+          }
+        })
+
+      assert html =~ "land somewhere first"
+      refute has_element?(view, "#result")
+    end
+
+    test "can't land twice in a row", %{view: view} do
+      render_click(view, "add_step")
+
+      html =
+        change(view, %{
+          mass: "28801",
+          steps: %{
+            "1" => %{action: "land", planet: "moon"},
+            "2" => %{action: "land", planet: "mars"}
+          }
+        })
+
+      assert html =~ "launch first"
+      refute has_element?(view, "#result")
+    end
+
+    test "launches from the planet it landed on", %{view: view} do
+      render_click(view, "add_step")
+
+      html =
+        change(view, %{
+          mass: "28801",
+          steps: %{
+            "1" => %{action: "land", planet: "moon"},
+            "2" => %{action: "launch", planet: "earth"}
+          }
+        })
+
+      assert html =~ "you&#39;re on Moon"
       refute has_element?(view, "#result")
     end
 

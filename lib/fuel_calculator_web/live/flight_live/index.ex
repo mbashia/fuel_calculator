@@ -136,25 +136,38 @@ defmodule FuelCalculatorWeb.FlightLive.Index do
   @spec parse_path([step()]) ::
           {:ok, [Calculator.step()]} | {:error, %{pos_integer() => map()}}
   defp parse_path(steps) do
-    {path, errors} =
-      Enum.reduce(steps, {[], %{}}, fn step, {path, errors} ->
+    {path, errors, _last} =
+      Enum.reduce(steps, {[], %{}, nil}, fn step, {path, errors, previous} ->
         action = Map.get(@actions, step.action)
         planet = Map.get(@planets, step.planet)
 
         step_errors =
-          %{}
+          previous
+          |> order_errors(step)
           |> put_if(is_nil(action), :action, "pick an action")
           |> put_if(is_nil(planet), :planet, "pick a planet")
 
         if step_errors == %{} do
-          {[{action, planet} | path], errors}
+          {[{action, planet} | path], errors, step}
         else
-          {path, Map.put(errors, step.id, step_errors)}
+          {path, Map.put(errors, step.id, step_errors), step}
         end
       end)
 
     if errors == %{}, do: {:ok, Enum.reverse(path)}, else: {:error, errors}
   end
+
+  defp order_errors(%{action: "launch"}, %{action: "launch"}),
+    do: %{action: "land somewhere first"}
+
+  defp order_errors(%{action: "land"}, %{action: "land"}),
+    do: %{action: "launch first"}
+
+  defp order_errors(%{action: "land", planet: landed}, %{action: "launch", planet: planet})
+       when is_map_key(@planets, landed) and planet != landed,
+       do: %{planet: "you're on #{Planet.name(@planets[landed])}"}
+
+  defp order_errors(_previous, _step), do: %{}
 
   defp put_if(map, true, key, value), do: Map.put(map, key, value)
   defp put_if(map, false, _key, _value), do: map
